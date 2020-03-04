@@ -5,16 +5,24 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Scanner;
 
-import bugreportanalyze.action.BRParsing;
+import bugreportanalyze.action.BRParse;
+import bugreportanalyze.action.BRParseFactory;
+import bugreportanalyze.action.BugzillaParse;
 
 public class AppEnter {
-
+/**
+ * @author Song Xuezhi
+ * @param args
+ * @throws Exception
+ */
 	public static void main(String[] args) throws Exception {
-		BRParsing brParsing=new BRParsing();
-		System.out.println("entering file path......");	
+		System.out.println("Please entering file path and bug report type，params use ','split");	
 		BufferedReader reader=new BufferedReader(new InputStreamReader(System.in));
-		String xmlPath=reader.readLine();
+		String input=reader.readLine();
+		String[] params =input.split(",");
+		
+		BRParse brParse=new BRParseFactory().getBRParse(params[1]);
 		System.out.println("reading xml..... may need longtime");	
-		brParsing.printDesc(xmlPath);
+		brParse.searchCRB(params[0]);
 	}
 }

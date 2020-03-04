@@ -2,14 +2,18 @@ package bugreportanalyze.action;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import configs.Configs;
 
@@ -17,19 +21,43 @@ import configs.Configs;
  * author Wu Qihao modified Song Xuezhi 2020 0207 analyze bug report xml by
  * keyword to find regression bug
  **/
-public class BRParsing {
-	public void printDesc(String xmlPath) throws Exception {
+public class BugzillaParse extends BRParse {
+	
+	@Override
+	public void searchCRB(String xmlPath) {
 		// Set output
 		int expectResultNo=0;
-		FileOutputStream outSTr = new FileOutputStream(new File(Configs.OUTPATH));
-		BufferedOutputStream buffer = new BufferedOutputStream(outSTr);
-
+		FileOutputStream outSTr;
+		BufferedOutputStream buffer = null;
+		try {
+			String pattern="_bz.txt";
+			outSTr = new FileOutputStream(new File(Configs.OUTPATH)+pattern);
+			 buffer = new BufferedOutputStream(outSTr);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		//读取xml对象
 		File bug_report = new File(xmlPath);
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		DocumentBuilder documentBuilder;
+		Document document = null;
+		try {
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			 document = documentBuilder.parse(bug_report);
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-		Document document = documentBuilder.parse(bug_report);
+	
 		NodeList items = document.getElementsByTagName("bug"); // 拿到文件中的所有bug，list
 		int num_item = items.getLength();
 
@@ -57,48 +85,30 @@ public class BRParsing {
 				longDescText.append(comment);
 			}
 
-			// 如果标题中存在regression ，内容描述中存在thread相关内容
-			
-			if (checkRegressionCondition(shortDesc) && checkConcurrencyCondition(longDescText.toString())) {
+			// 如果涉及的所有文本中存在regression关键字，和并发相关关键字
+			String text=shortDesc+longDescText.toString();
+			if (checkRegressionCondition(text) && checkConcurrencyCondition(text)) {
 				++expectResultNo;
-				buffer.write((BugID + ". Summary: " + shortDesc + "\n Description: \n"+longDescText).getBytes());
-				buffer.write(("--------------------------------------------------------------------------------\n")
-						.getBytes());
-
+				try {
+					buffer.write((BugID + ". Summary: " + shortDesc ).getBytes());
+					buffer.write(("--------------------------------------------------------------------------------\n")
+							.getBytes());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		
-		buffer.flush();
-		buffer.close();
-		System.out.println("No. of br parsed: " + num_item+"output: "+expectResultNo);
+		try {
+			buffer.flush();
+			buffer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("No. of br parsed: " + num_item+" , output: "+expectResultNo);
 		System.out.println("Done.");
-	}
-
-	private boolean checkRegressionCondition(String text) {
-		boolean flag = false;
-		if (text.contains("regression")) {
-			flag = true;
-
-		}
-		return flag;
-	}
-
-	private boolean checkConcurrencyCondition(String text) {
-		boolean flag = false;
-
-		if (text.contains("thread") || text.contains("deadlock") || text.contains("synchronized")
-				 || text.contains("wait") || text.contains("notify")
-				|| text.contains("notifyAll") || text.contains("concurrency")) {
-			flag = true;
-		}
-		return flag;
-	}
-
-	// 获取所有单一标签的内容
-	private String getContext(NodeList nodeList) {
-		if (nodeList != null) {
-			return nodeList.getLength() > 0 ? nodeList.item(0).getTextContent() : null;
-		}
-		return null;
 	}
 }

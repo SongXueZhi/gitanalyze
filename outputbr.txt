@@ -1,0 +1,280 @@
+DERBY-2657. Summary: Performance regression after check-in of svn 531971
+--------------------------------------------------------------------------------
+DERBY-1633. Summary: Regression: The fields of views are not being calculated properly since 10.1.2.4
+--------------------------------------------------------------------------------
+DERBY-4337. Summary: DRDA regression in LOB retrieval between 10.3.2.1 -> 10.4.2.0 (and beyond)
+--------------------------------------------------------------------------------
+DERBY-5222. Summary: Compatibility tests fail to delete database directory
+--------------------------------------------------------------------------------
+DERBY-3644. Summary: NetworkServerControl.ping() on trunk against 10.3.2.1 and older servers give 'DRDA_InvalidReplyHeader2.S:Invalid reply header from network server: Invalid string . Plaintext connection attempt to an SSL enabled server?'
+--------------------------------------------------------------------------------
+DERBY-4798. Summary: NPE in nested outer join
+--------------------------------------------------------------------------------
+DERBY-4668. Summary: Derby stored procedures with DriverManager.getConnection("jdbc:default:connection") fail if JCC 4.x (db2jcc4.jar) is in the classpath or any version jcc is explicitly loaded
+--------------------------------------------------------------------------------
+DERBY-4224. Summary: Commit after setAsciiStream() makes execution fail with the client driver
+--------------------------------------------------------------------------------
+DERBY-3303. Summary: ArrayIndexOutOfBoundsException at MergeSort.compare
+--------------------------------------------------------------------------------
+DERBY-5580. Summary: NativeAuthenticationServiceTest getting multiple errors trying to delete files/directories during teardown
+--------------------------------------------------------------------------------
+DERBY-6663. Summary: NPE when a trigger tries to insert into a table with a foreign key
+--------------------------------------------------------------------------------
+DERBY-4312. Summary: SQLException XJ215 on insert  with setCharacterStream() and autocommit off in mailjdbc test
+--------------------------------------------------------------------------------
+DERBY-3023. Summary: Different result rows depending on the sequence of INNER JOIN and OUTER JOIN
+--------------------------------------------------------------------------------
+DERBY-800. Summary: derbylang/ConcurrentImplicitCreateSchema.java fails intermittently with a lock timeout
+--------------------------------------------------------------------------------
+DERBY-5405. Summary: Java deadlock in AutomaticIndexStatisticsTest.testShutdownWhileScanningThenDelete (BasePage and StoredPage)
+--------------------------------------------------------------------------------
+DERBY-4095. Summary: Trigger  fails with ERROR 38000: The exception 'java.sql.SQLException: ResultSet not open  during VTIResultSet.getNextRowCore()
+--------------------------------------------------------------------------------
+DERBY-3230. Summary: Selecting data from a Table raises Error XN008: Query processing has been terminated due to an error on the server
+--------------------------------------------------------------------------------
+DERBY-3701. Summary: java.lang.Exception: DRDA_UnableToAccept.S:Unable to accept connections and client hang if tracing is turned on but traceDirectory does not exist
+--------------------------------------------------------------------------------
+DERBY-3594. Summary: socket reset failure causing 17 networkserver tests to fail on ibm iseries
+--------------------------------------------------------------------------------
+DERBY-5954. Summary: NPE in SELECT involving subselects and windows functions
+--------------------------------------------------------------------------------
+DERBY-2344. Summary: 'java.lang.OutOfMemoryError: Java heap space' in NetworkServerThread
+--------------------------------------------------------------------------------
+DERBY-1848. Summary: jdbcapi/SetQueryTimeoutTest.java fails on IBM  wctme 5.7
+--------------------------------------------------------------------------------
+DERBY-5317. Summary:  NullPointerException in org.apache.derby.client.net.Request.sendBytes()  with client
+--------------------------------------------------------------------------------
+DERBY-5325. Summary: Checkpoint fails with ClosedChannelException in InterruptResilienceTest
+--------------------------------------------------------------------------------
+DERBY-1252. Summary: Old clients with new server return wrong database metadata values for some methods
+--------------------------------------------------------------------------------
+DERBY-3362. Summary: ControlRow NPE
+--------------------------------------------------------------------------------
+DERBY-1435. Summary: Conglomerate does not exist occurs in a specific case after dropping a table referenced by a trigger
+--------------------------------------------------------------------------------
+DERBY-6019. Summary: hang after connect reset error in (emb)replicationTests.ReplicationRun_Local_3_p5.testReplication_Local_3_p5_DERBY_3878
+--------------------------------------------------------------------------------
+DERBY-5333. Summary: Intermittent assert failure in testInterruptShutdown: thread's interrupted flag lost after shutdown
+--------------------------------------------------------------------------------
+DERBY-3316. Summary: Leak in client if ResultSet not closed
+--------------------------------------------------------------------------------
+DERBY-4246. Summary: '.replicationTests.ReplicationRun_Local_3_p5).testReplication_Local_3_p5_DERBY_3878()' fails w/ "Could not perform operation 'stopSlave' because the database '...' has not been booted".
+--------------------------------------------------------------------------------
+DERBY-5082. Summary: ShutdownException in ContextManager.checkInterrupt() during shutdown
+--------------------------------------------------------------------------------
+DERBY-4874. Summary: Trigger does not recognize new size of VARCHAR column  expanded with ALTER TABLE. It fails with ERROR 22001: A truncation error was encountered trying to shrink VARCHAR 
+--------------------------------------------------------------------------------
+DERBY-2329. Summary: Compatibility test fails in all combinations with 'serverTrunk', i.e. current trunk revision. (since tinderbox on svn 506771)
+--------------------------------------------------------------------------------
+DERBY-2475. Summary: invalid checksum
+--------------------------------------------------------------------------------
+DERBY-5571. Summary: IndexStatisticsDaemonImpl.schedule  should wrap Thread.setDaemon() in a privilege block
+--------------------------------------------------------------------------------
+DERBY-6688. Summary: NPE (or sane: ASSERT failure) with ROW_NUMBER in some subqueries
+--------------------------------------------------------------------------------
+DERBY-5407. Summary: When run across the network, dblook produces unusable DDL for VARCHAR FOR BIT DATA columns.
+--------------------------------------------------------------------------------
+DERBY-2749. Summary: Client connection closed during heavy load connections to network server
+--------------------------------------------------------------------------------
+DERBY-5749. Summary: Implicit cast of variable length values, e.g. as arguments to stored methods and generated columns values, silently truncate if too long
+--------------------------------------------------------------------------------
+DERBY-5427. Summary: Unauthorized shutdown should not generate thread dump and javacore. AuthenticationTest dumps over 20 javacores with IBM JVM for normal user errors
+--------------------------------------------------------------------------------
+DERBY-3543. Summary: NetworkServerControl with options but no command does not give usage message
+--------------------------------------------------------------------------------
+DERBY-3944. Summary: CHECK constraints involving user-coded functions may return different results depending on who performs the triggering INSERT/UPDATE
+--------------------------------------------------------------------------------
+DERBY-1129. Summary: compatibility tests fail with security related errors.
+--------------------------------------------------------------------------------
+DERBY-1196. Summary: Network server closes  prepared statements  prematurely if  exception occurs during OPNQRY  and can cause "'Statement' already closed" exception on reexecution
+--------------------------------------------------------------------------------
+DERBY-1130. Summary: Client should not allow databaseName to be set with setConnectionAttributes
+--------------------------------------------------------------------------------
+DERBY-5152. Summary: Shutting down db, information that the thread received an interrupt will not be restored to thread's interrupt flag
+--------------------------------------------------------------------------------
+DERBY-4712. Summary: Complex nested joins problems
+--------------------------------------------------------------------------------
+DERBY-6841. Summary: Derby v10.12.1.1 is horribly slow compared to v10.11.1.1 in embedded mode
+--------------------------------------------------------------------------------
+DERBY-5692. Summary: intermittent test failure in storetests/st_derby715.java
+--------------------------------------------------------------------------------
+DERBY-303. Summary: derbynet/testconnection.java fails
+--------------------------------------------------------------------------------
+DERBY-5074. Summary: test failure(s) with IBM 1.4.2 in store.InterruptResilienceTest.testRAFWriteInterrupted: java.sql.SQLException: The exception 'junit.framework.AssertionFailedError: interrupt flag lost' was thrown while evaluating an expression. 
+--------------------------------------------------------------------------------
+DERBY-5030. Summary:  "index-stat-thread" java.lang.NullPointerException at store.access.btree.ControlRow.getControlRowForPage in suites.All 
+--------------------------------------------------------------------------------
+DERBY-4911. Summary: restoreIntrFlagIfSeen may throw ShutdownException causing confusing console stack trace at server shutdown
+--------------------------------------------------------------------------------
+DERBY-5208. Summary: largeDataTests run but give no result
+--------------------------------------------------------------------------------
+DERBY-5069. Summary: Since Feb 7,2011 weme 6.2 Junit tests have failed to run completely with Failed to invoke suite():java.lang.reflect.InvocationTargetException
+--------------------------------------------------------------------------------
+DERBY-5430. Summary: Embedded nstest shows ERROR 40001: A lock could not be obtained due to a deadlock,  in nstest
+--------------------------------------------------------------------------------
+DERBY-4562. Summary: Complation of prepared statement results in Syntax Error
+--------------------------------------------------------------------------------
+DERBY-5243. Summary: assert failure in test testRAFReadWriteMultipleThreads: interrupted flag cleared
+--------------------------------------------------------------------------------
+DERBY-4463. Summary: JMX test in nightly test suite failed with:  JMXTest:clientjava.lang.InterruptedException:  
+--------------------------------------------------------------------------------
+DERBY-4835. Summary: Trigger plan does not recompile with upgrade from 10.5.3.0 to 10.6.1.0 causing  java.lang.NoSuchMethodError
+--------------------------------------------------------------------------------
+DERBY-6680. Summary: Other jar files may need to be granted permission to read derby.ui.* properties
+--------------------------------------------------------------------------------
+DERBY-3395. Summary: 'An ON clause associated with a JOIN operator is not valid.' failure with 10.3.2.1 passes with 10.2
+--------------------------------------------------------------------------------
+DERBY-5005. Summary: Error when fully qualifying a field from a view in an ORDER BY clause
+--------------------------------------------------------------------------------
+DERBY-5223. Summary: Thread's interrupted flag not always preserved after Derby returns from JDBC API call
+--------------------------------------------------------------------------------
+DERBY-3035. Summary: Cannot restore backups without BACKUP.HISTORY file
+--------------------------------------------------------------------------------
+DERBY-4181. Summary: SQLState.LANG_IGNORE_MISSING_INDEX_ROW_DURING_DELETE during NsTest run 
+--------------------------------------------------------------------------------
+DERBY-459. Summary: lang/errorStream.java fails intermittently on Windows 2003 server
+--------------------------------------------------------------------------------
+DERBY-2218. Summary: Null Pointer Exception when an untyped NULL subquery ("values null") appears outside of the FROM list in a SELECT query.
+--------------------------------------------------------------------------------
+DERBY-4836. Summary: many failures with IBM 1.5 and 1.6 on windows after test InternationalConnectTest
+--------------------------------------------------------------------------------
+DERBY-5567. Summary: AlterTableTest#testDropColumn fails: drop view cannot be performed due to dependency
+--------------------------------------------------------------------------------
+DERBY-4960. Summary: Race condition in FileContainer#allocCache when reopening RAFContainer after interrupt
+--------------------------------------------------------------------------------
+DERBY-1399. Summary: DerbyNetAutoStart test fails on JDK 1.6 after introduction JDBC4 driver autoloading
+--------------------------------------------------------------------------------
+DERBY-1574. Summary: NullPointerException in UPDATE with COALESCE and subquery
+--------------------------------------------------------------------------------
+DERBY-4331. Summary: Join returns results in wrong order
+--------------------------------------------------------------------------------
+DERBY-6553. Summary: Sequence generator makes CREATE TRIGGER fail with internal error
+--------------------------------------------------------------------------------
+DERBY-1374. Summary: compatibility test fails with 'PROTOCOL Data Stream Syntax Error'
+--------------------------------------------------------------------------------
+DERBY-5289. Summary: Unable to boot 10.5.1.1 database - fails during soft/hard upgrade process for a new version number while trying to drop jdbc metadata
+--------------------------------------------------------------------------------
+DERBY-1361. Summary: positioned updates and deletes allowed after a commit without repositioning the cursor - if the table is indexed on the columns selected
+--------------------------------------------------------------------------------
+DERBY-5292. Summary: SQLAuthorisation and views
+--------------------------------------------------------------------------------
+DERBY-2896. Summary: DatabaseMetaData.getTables() fails in TERRORITY_BASED collation database with SQLState 42818: Comparisions between CHAR and CHAR not allowed.
+--------------------------------------------------------------------------------
+DERBY-5185. Summary: store/rollForwardRecovery.sql stuck in RAFContainer4.recoverContainerAfterInterrupt() during shutdown
+--------------------------------------------------------------------------------
+DERBY-1856. Summary: Multiple communication failures when starting server with derby.drda.timeSlice
+--------------------------------------------------------------------------------
+DERBY-4895. Summary: Thread local TableDescriptor#referencedColumnMap is not removed from app threads when Derby is shut down
+--------------------------------------------------------------------------------
+DERBY-5233. Summary: Interrupt of create table or index (i.e. a container) will throw XSDF1 under NIO - connection survives
+--------------------------------------------------------------------------------
+DERBY-1211. Summary: I have some problem at time of using procedure in Apache derby !
+--------------------------------------------------------------------------------
+DERBY-4038. Summary: On Z/OS store/access.sql fails with encryptionAES and encryptionDES
+--------------------------------------------------------------------------------
+DERBY-6617. Summary: Silently swallowed SecurityExceptions may disable Derby features, including security features.
+--------------------------------------------------------------------------------
+DERBY-2689. Summary: Deadlock with GenericPreparedStatement
+--------------------------------------------------------------------------------
+DERBY-728. Summary: Unable to create databases whose name containg Chinese characters through the client driver
+--------------------------------------------------------------------------------
+DERBY-1. Summary: Can't create a new db on OS X
+--------------------------------------------------------------------------------
+DERBY-1446. Summary: Derby can enter infinite loop  and consume 100% cpu  when loading class when running a stored procedure within Eclipse 3.2
+--------------------------------------------------------------------------------
+DERBY-4179. Summary: bootLock.java fails with missing exception on z/OS with  pmz3160sr2ifix-20081021_01(SR2+IZ32776+IZ33456), and Windows Vista
+--------------------------------------------------------------------------------
+DERBY-4326. Summary: hang on winvista with IBM 1.6 SR5 in NSSecurityMechanismTest
+--------------------------------------------------------------------------------
+DERBY-4175. Summary: Instability in some replication tests under load, since tests don't wait long enough for final state or anticipate intermediate states
+--------------------------------------------------------------------------------
+DERBY-4387. Summary: Infinite loop in PredicateList.joinClauseTransitiveClosure()
+--------------------------------------------------------------------------------
+DERBY-3404. Summary: EmbedResultSet.getString() returns wrong value after auto-commit with CLOSE_CURSORS_AT_COMMIT
+--------------------------------------------------------------------------------
+DERBY-1327. Summary: Identity column can be  created with wrong and very large start with value with  "J2RE 1.5.0 IBM Windows 32 build pwi32dev-20060412 (SR2)" with JIT on
+--------------------------------------------------------------------------------
+DERBY-2026. Summary: Setting a login timeout in client driver can lead to query timeout
+--------------------------------------------------------------------------------
+DERBY-4198. Summary: When using the FOR UPDATE OF clause with SUR (Scroll-insensive updatable result sets), the updateRow() method crashes
+--------------------------------------------------------------------------------
+DERBY-5097. Summary:  testMTSelect(org.apache.derbyTesting.functionTests.tests.store.AutomaticIndex StatisticsMultiTest)junit.framework.AssertionFailedError: failed to get statisti cs for table MTSEL (#expected=2, timeout=0) on AIX IBM JDK 1.5
+--------------------------------------------------------------------------------
+DERBY-5312. Summary: InterruptResilienceTest failed with ERROR 40XD1: Container was opened in read-only mode.
+--------------------------------------------------------------------------------
+DERBY-6670. Summary: Rollback to savepoint allows violation of deferrable constraints
+--------------------------------------------------------------------------------
+DERBY-4186. Summary: After master stop, test fails when it succeeds in connecting (rebooting) shut-down ex-slave
+--------------------------------------------------------------------------------
+DERBY-151. Summary: Thread termination -> XSDG after operation is 'complete'
+--------------------------------------------------------------------------------
+DERBY-3926. Summary: Incorrect ORDER BY caused by index
+--------------------------------------------------------------------------------
+DERBY-4946. Summary: Derby 10.7 DatabaseMetaData.getTypeInfo() should not return BOOLEAN for a soft upgraded database
+--------------------------------------------------------------------------------
+DERBY-4075. Summary: ERROR XSDBB: Unknown page format at page Page(613,Container(0, 1024)) when running MailJdbc (Embedded) system tests
+--------------------------------------------------------------------------------
+DERBY-6554. Summary: Too much contention followed by assert failure when accessing sequence in transaction that created it
+--------------------------------------------------------------------------------
+DERBY-5498. Summary: ClosedByInterruptException in AuthenticationTest
+--------------------------------------------------------------------------------
+DERBY-4053. Summary: Network Server's failure to rollback local transactions on shutdown can cause  hang on startup with message java.net.BindException: Address already in use: NET_Bind in derby.log 
+--------------------------------------------------------------------------------
+DERBY-4330. Summary: NullPointerException or assert failure when re-executing PreparedStatement after lock timeout
+--------------------------------------------------------------------------------
+DERBY-4698. Summary: Simple query with HAVING clause crashes with NullPointerException
+--------------------------------------------------------------------------------
+DERBY-39. Summary: Strange error in JOIN ON clause
+--------------------------------------------------------------------------------
+DERBY-634. Summary: Subquery materialization can cause stack overflow
+--------------------------------------------------------------------------------
+DERBY-4320. Summary: ERROR XSDBB: Unknown page format at page Page(11093,Container(0, 1745))
+--------------------------------------------------------------------------------
+DERBY-5514. Summary: SecureServerTest (and others) don't play nice with EMMA: AccessControlException
+--------------------------------------------------------------------------------
+DERBY-3718. Summary: NPE when firing a trigger
+--------------------------------------------------------------------------------
+DERBY-1058. Summary: derby fails supporting holdable scrollable resultset: ERROR XSCB8: The btree conglomerate 1,141,037,436,752 is closed.
+--------------------------------------------------------------------------------
+DERBY-4920. Summary: suites.All stuck in RAFContainer4.awaitRestoreChannel()
+--------------------------------------------------------------------------------
+DERBY-5158. Summary: Incomprehensible error message on client if attempting rollback after database has been shut down.
+--------------------------------------------------------------------------------
+DERBY-3892. Summary: Query execution hangs
+--------------------------------------------------------------------------------
+DERBY-418. Summary: outofmemory error when running large query in autocommit=false mode
+--------------------------------------------------------------------------------
+DERBY-1610. Summary: Resolve difference of type compatibility between Embedded and NetworkServer/NetworkDriver
+--------------------------------------------------------------------------------
+DERBY-1173. Summary:  conglomerate (129) requested does not exist error on create table after aborting and rerunning  jdbcapi/checkDataSource  test with client.
+--------------------------------------------------------------------------------
+DERBY-6015. Summary: Translation of string 'Network Server' in drda error messages is inconsistent
+--------------------------------------------------------------------------------
+DERBY-5014. Summary: Tests should restore the timeout values to default after they are done running.
+--------------------------------------------------------------------------------
+DERBY-5447. Summary: Deadlock in AutomaticIndexStatisticsTest.testShutdownWhileScanningThenDelete (BasePage.releaseExclusive and Observable.deleteObserver (BaseContainerHandle))
+--------------------------------------------------------------------------------
+DERBY-5603. Summary: EmbedConnection.clearLOBMapping() incorrectly clears lobFiles causing a ConcurrentModificationException
+--------------------------------------------------------------------------------
+DERBY-1004. Summary: Client should not require user to rollback the active transaction before call to PooledConnection.getConnection()
+--------------------------------------------------------------------------------
+DERBY-4152. Summary: mailjdbc test database  grows very fast with 10.5
+--------------------------------------------------------------------------------
+DERBY-1219. Summary: jdbcapi/checkDataSource.java and jdbcapi/checkDataSource30.java hang intermittently with client
+--------------------------------------------------------------------------------
+DERBY-956. Summary: OutOfMemoryError: Java heap space in stress.multi
+--------------------------------------------------------------------------------
+DERBY-4191. Summary: Lack of SELECT privilege does not prevent SELECT COUNT(*)
+--------------------------------------------------------------------------------
+DERBY-939. Summary: NullPointerException at ResultSet.close() time for simple query using UNION and INTERSECT
+--------------------------------------------------------------------------------
+DERBY-3493. Summary: stress.multi times out waiting on testers with blocked testers waiting on the same statement
+--------------------------------------------------------------------------------
+DERBY-3719. Summary: '...replication.buffer.LogBufferFullException' causes failover to fail w/ 'XRE07, SQLERRMC: Could not perform operation because the database is not in replication master mode.'
+--------------------------------------------------------------------------------
+DERBY-4200. Summary: client side OutOfMemoryError running derbnetclientmats:jdbcapi/derbyStress
+--------------------------------------------------------------------------------
+DERBY-302. Summary: Takes over 3 minutes to insert a 500kb String into CLOB
+--------------------------------------------------------------------------------
+DERBY-6741. Summary: User code can get the ContextManager from an EmbedConnection
+--------------------------------------------------------------------------------

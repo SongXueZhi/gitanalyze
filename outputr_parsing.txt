@@ -1,0 +1,623 @@
+359698. Summary: [prefs] Regression: EclipsePreferences#flush is subject to deadlock due to Open Call via ProjectPreferences / ProfilePreferences
+ Description: 
+comment0 : commentId2003885 author:mober.at+eclipse Text:+++ This bug was initially created as a clone of Bug #333726 +++
+
+Build ID: Eclipse 3.7.1
+
+The change from bug 333726 introduces a "synchronized" block for the
+EclipsePreferences#flush() method. Bug 359485 has a detailed stack trace and analysis why this change causes CDT to deadlock. 
+
+The problem is that from inside the (now synchronized) flush() method, a number of protected methods are called. These "open calls" bear the risk of deadlock. In this case, ProjectPreferences#save() extends EclipsePreferences, and from inside its save() method may perform a Thread switch to update the workspace, which may in turn call resource listeners. Those Thread switches occur with the synchronized block still holding a lock, causing CDT (and potentially others) to deadlock.
+
+I think there are 2 problems with the current situation:
+
+1. Given that there are Open Calls from inside the flush() method, a
+   "synchronized" statement on method level is not appropriate (as any 
+   book on Java Concurrency will confirm). A different way should be found
+   to fix the problem from bug 333726.
+
+2. ProjectPreferences extends EclipsePreferences, thus violating the API 
+   boundary and "hiding" the fact that there are Open Calls. I'm wondering
+   whether we could either (a) avoid that kind of non-API usage or 
+   (b) improve comments or tooling to make it more apparent that protected
+   method calls from EclipsePreferences are in fact Open Calls.
+
+   In fact, ProfilePreferences in equinox.p2 has the same problem -- it also
+   schedules a SaveJob from inside its save() method thus causing Thread
+   Switch and potential deadlock.
+comment1 : commentId2004465 author:mschorn.eclipse Text:For clarification I'd like to rephrase the issue:
+
+(1) A thread notifying a resource change can hold the lock on preferences:    
+    CModelManager.resourceChanged(IResourceChangeEvent) line: 892    
+    NotificationManager$1.run() line: 291    
+    SafeRunner.run(ISafeRunnable) line: 42    
+    NotificationManager.notify(...) line: 285    
+    NotificationManager.broadcastChanges(...) line: 149    
+    Workspace.broadcastPostChange() line: 395    
+    Workspace.endOperation(...) line: 1530    
+    Workspace.run(...) line: 2353    
+    ProjectPreferences.save() line: 628    
+    ProjectPreferences(EclipsePreferences).flush() line: 353         
+    ProjectPreferences.flush() line: 380 
+
+(2) The same lock is required when accessing a node in the preferences:
+    ProjectPreferences(EclipsePreferences).getChild(...) line: 400
+    ProjectPreferences(EclipsePreferences).internalNode(...) line: 542    
+    ProjectPreferences(EclipsePreferences).node(String) line: 670    
+ 
+With that CDT is lured into a deadlock:
+(3) We use a lock X within the resource notification. 
+(4) At a different place when owning X we access a node in the preferences. 
+
+(1)+(3):  Locks preferences, locks X.
+(4)+(2):  Locks X, locks preferences.
+==> With a bad timing this dead-locks.
+comment2 : commentId2004754 author:dj.houghton Text:Fixed in 3.7.x branch.
+
+http://git.eclipse.org/c/equinox/rt.equinox.bundles.git/commit/?id=2607f050eb20c418a2b56437cdb388a397ebc207
+comment3 : commentId2005130 author:mober.at+eclipse Text:CQ:WIND00309400
+
+When importing the tree from the git R3_7_maintenance branch, I noticed that the bundle version has not been updated yet. It would be good to get the version updated for upcoming M-builds towards 3.7.2.
+comment4 : commentId2005241 author:dj.houghton Text:Yep, there are a couple Equinox and p2 bundles that need incrementing. We had some issues with releasing things this week so I'm going to increment all the bundles at the same time once we get an accurate comparator result from the tests.
+comment5 : commentId2087323 author:loskutov Text:Hi, it looks like the patch is NOT in 3.7.2, see bug 375601 comment 4
+comment6 : commentId2087330 author:malaperle Text:Commit f81da88c2918758cb73695b3ebd3931670fcfb7a added the synchronize back and some subclasses call the internalFlush to prevent the dead lock but InstancePreferences can still deadlock.
+comment7 : commentId2087335 author:loskutov Text:Ah, sorry, I mixed left/right sides.
+--------------------------------------------------------------------------------
+359851. Summary: [prefs] Regression: EclipsePreferences#flush is subject to deadlock due to Open Call via ProjectPreferences / ProfilePreferences
+ Description: 
+comment0 : commentId2004711 author:dj.houghton Text:Cloned to track release into master.
+
++++ This bug was initially created as a clone of Bug #359698 +++
+
++++ This bug was initially created as a clone of Bug #333726 +++
+
+Build ID: Eclipse 3.7.1
+
+The change from bug 333726 introduces a "synchronized" block for the
+EclipsePreferences#flush() method. Bug 359485 has a detailed stack trace and analysis why this change causes CDT to deadlock. 
+
+The problem is that from inside the (now synchronized) flush() method, a number of protected methods are called. These "open calls" bear the risk of deadlock. In this case, ProjectPreferences#save() extends EclipsePreferences, and from inside its save() method may perform a Thread switch to update the workspace, which may in turn call resource listeners. Those Thread switches occur with the synchronized block still holding a lock, causing CDT (and potentially others) to deadlock.
+
+I think there are 2 problems with the current situation:
+
+1. Given that there are Open Calls from inside the flush() method, a
+   "synchronized" statement on method level is not appropriate (as any 
+   book on Java Concurrency will confirm). A different way should be found
+   to fix the problem from bug 333726.
+
+2. ProjectPreferences extends EclipsePreferences, thus violating the API 
+   boundary and "hiding" the fact that there are Open Calls. I'm wondering
+   whether we could either (a) avoid that kind of non-API usage or 
+   (b) improve comments or tooling to make it more apparent that protected
+   method calls from EclipsePreferences are in fact Open Calls.
+
+   In fact, ProfilePreferences in equinox.p2 has the same problem -- it also
+   schedules a SaveJob from inside its save() method thus causing Thread
+   Switch and potential deadlock.
+comment1 : commentId2004712 author:dj.houghton Text:Fixed in master.
+
+http://git.eclipse.org/c/equinox/rt.equinox.bundles.git/commit/?id=8c8a2977ca3ceb365f5d5dd3afcda5990c81b197
+comment2 : commentId2090426 author:john.arthorne Text:*** Bug 376141 has been marked as a duplicate of this bug. ***
+--------------------------------------------------------------------------------
+376141. Summary: [prefs] Regression: EclipsePreferences#flush is subject to deadlock due to Open Call via ProjectPreferences / ProfilePreferences
+ Description: 
+comment0 : commentId2089986 author:mschorn.eclipse Text:The fix for the issue did not make it into eclipse 3.8M6.
+
++++ This bug was initially created as a clone of Bug #359698 +++
+
++++ This bug was initially created as a clone of Bug #333726 +++
+
+Build ID: Eclipse 3.7.1
+
+The change from bug 333726 introduces a "synchronized" block for the
+EclipsePreferences#flush() method. Bug 359485 has a detailed stack trace and analysis why this change causes CDT to deadlock. 
+
+The problem is that from inside the (now synchronized) flush() method, a number of protected methods are called. These "open calls" bear the risk of deadlock. In this case, ProjectPreferences#save() extends EclipsePreferences, and from inside its save() method may perform a Thread switch to update the workspace, which may in turn call resource listeners. Those Thread switches occur with the synchronized block still holding a lock, causing CDT (and potentially others) to deadlock.
+
+I think there are 2 problems with the current situation:
+
+1. Given that there are Open Calls from inside the flush() method, a
+   "synchronized" statement on method level is not appropriate (as any 
+   book on Java Concurrency will confirm). A different way should be found
+   to fix the problem from bug 333726.
+
+2. ProjectPreferences extends EclipsePreferences, thus violating the API 
+   boundary and "hiding" the fact that there are Open Calls. I'm wondering
+   whether we could either (a) avoid that kind of non-API usage or 
+   (b) improve comments or tooling to make it more apparent that protected
+   method calls from EclipsePreferences are in fact Open Calls.
+
+   In fact, ProfilePreferences in equinox.p2 has the same problem -- it also
+   schedules a SaveJob from inside its save() method thus causing Thread
+   Switch and potential deadlock.
+comment1 : commentId2090003 author:loskutov Text:(In reply to comment #0)
+> I think there are 2 problems with the current situation:
+> 
+> 1. Given that there are Open Calls from inside the flush() method, a
+>    "synchronized" statement on method level is not appropriate (as any 
+>    book on Java Concurrency will confirm). A different way should be found
+>    to fix the problem from bug 333726.
+
+Can you please consider to look into my recent analysis of the problem, documented in bug 333726 comment 27? This is also my conclusion and a possible solution path.
+
+> 2. ProjectPreferences extends EclipsePreferences, thus violating the API 
+>    boundary and "hiding" the fact that there are Open Calls. I'm wondering
+>    whether we could either (a) avoid that kind of non-API usage or 
+>    (b) improve comments or tooling to make it more apparent that protected
+>    method calls from EclipsePreferences are in fact Open Calls.
+
+Comments are nice but you hardly could expect that somebody would read through all javadocs and you can't even enforce that reader would do the right thing after reading. So if there is a better solution possible (as in point 1), then I would not spent any time on writing long comments how to workaround bad API.
+comment2 : commentId2090425 author:john.arthorne Text:This bug report is an exact clone of bug 359851 which was already fixed in Juno (3.8 and 4.2). It sounds from comment #1 that we are dealing with a different problem that Andrey has outlined in bug 333726. I have entered a new bug for this problem because I find dealing with a cloned copy of an old bug with an unrelated description too confusing. I have opened bug 376206 against equinox for the new problem.
+
+*** This bug has been marked as a duplicate of bug 359851 ***
+--------------------------------------------------------------------------------
+483521. Summary: JSP that is the target of a multipart/form-data POST is not able to read the request body containing the multipart data, regression from Luna SR2
+ Description: 
+comment0 : commentId2647247 author:jgwest Text:If a JSP page is the target of 'multipart/form-data' POST request, calling request.getInputStream() will return an empty InputStream (eg it immediately returns -1/EOF). In this scenario, where no other code has consumed the input, the InputStream should return the body of the request (which would contain the multipart-form data).
+
+We discovered this while attempting to debug a Web Service Explorer(WSE) bug (https://bugs.eclipse.org/bugs/show_bug.cgi?id=476132). 
+
+I have boiled the issue down to a simple test case with one small initialization class and 2 tiny JSPs (attached).
+
+This is a regression from Luna SR2, where both WSE and this simple test case properly handle this scenario. With Mars.1 we get an exception, and with latest Neon we no longer see the request body at all. This entirely blocks WSE as the point at which it occurs is the actual invocation of the Web service.
+
+Test Case Overview:
+- NewFile.jsp: Sends a simple POST with enctype="multipart/form-data" to NewFile2.jsp
+- NewFile2.jsp: Prints the request body (you will see it is empty.)
+
+
+To reproduce:
+1. Import the provided project into your workbench.
+2. Self-host the the workspace with the provided project (Run > Run Configuration > New Eclipse Application > Run). This will open a new workbench.
+3. Click the Eclipse Icon in the top icon bar with the name 'Say hello world'. It will open a dialog 'Starting web app', and then will initialize Jetty, and Jetty will start listening on a port.
+4. Go back to your main (non-self-hosted) workbench. Open the console. You will see the URL that Jetty is listening on. For example:
+	"Go to this URL: http://localhost:52730/wse/wsdl/actions/NewFile.jsp"
+
+5. Open the URL in your browser (does not need to be internal Eclipse browser). You will see the first simple JSP.
+6. Click the 'Go' button. You should now see a blank page (the second simple JSP).
+
+7. Now, look for 'str:' lines in the Console view of the host workbench. The 'str:' lines correspond to the JSP reading the request body with BufferedReader.  With Neon, you will see not any 'str:' lines, because the request body is empty. See behaviour for our releases below.
+
+
+Results for Neon, Luna SR2, and Mars:
+
+With Neon latest: 
+
+This simple test case prints nothing (as getInputStream() indicates no content is available)
+
+
+With Luna SR2, this simple test case prints this:
+
+str: ------WebKitFormBoundaryD1BrUTsjjBSH44U2
+str: Content-Disposition: form-data; name="submissionAction"
+str: 
+str: submissionActionForm
+str: ------WebKitFormBoundaryD1BrUTsjjBSH44U2--
+
+This is the multipart form data. This is the expected behaviour.
+
+With Mars.1, an exception is printed:
+java.io.IOException: Missing content for multipart request
+	at org.eclipse.jetty.util.MultiPartInputStreamParser.parse(MultiPartInputStreamParser.java:491) ~[org.eclipse.jetty.util_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.util.MultiPartInputStreamParser.getParts(MultiPartInputStreamParser.java:400) ~[org.eclipse.jetty.util_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.Request.getParts(Request.java:2139) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.Request.extractMultipartParameters(Request.java:385) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.Request.extractContentParameters(Request.java:308) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.Request.extractParameters(Request.java:256) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.Request.getParameterMap(Request.java:839) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.equinox.http.servlet.internal.servlet.HttpServletRequestBuilderWrapperImpl.getParameterMap(HttpServletRequestBuilderWrapperImpl.java:96) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.servlet.HttpServletRequestBuilderWrapperImpl.push(HttpServletRequestBuilderWrapperImpl.java:255) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.context.DispatchTargets.doDispatch(DispatchTargets.java:91) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.servlet.RequestDispatcherAdaptor.include(RequestDispatcherAdaptor.java:45) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.apache.jasper.runtime.JspRuntimeLibrary.include(JspRuntimeLibrary.java:1015) [org.apache.jasper.glassfish_2.2.2.v201501141630.jar:na]
+	at org.apache.jsp.wsdl.actions.NewFile2_jsp._jspService(org.apache.jsp.wsdl.actions.NewFile2_jsp:88) [na:na]
+	at org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:111) [org.apache.jasper.glassfish_2.2.2.v201501141630.jar:na]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790) [javax.servlet_3.1.0.v201410161800.jar:3.1.0]
+	at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:403) [org.apache.jasper.glassfish_2.2.2.v201501141630.jar:na]
+	at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:492) [org.apache.jasper.glassfish_2.2.2.v201501141630.jar:na]
+	at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:378) [org.apache.jasper.glassfish_2.2.2.v201501141630.jar:na]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790) [javax.servlet_3.1.0.v201410161800.jar:3.1.0]
+	at org.eclipse.equinox.jsp.jasper.JspServlet.service(JspServlet.java:155) [org.eclipse.equinox.jsp.jasper_1.0.500.v20150119-1358.jar:na]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790) [javax.servlet_3.1.0.v201410161800.jar:3.1.0]
+	at org.eclipse.equinox.http.registry.internal.ServletManager$ServletWrapper.service(ServletManager.java:180) [org.eclipse.equinox.http.registry_1.1.300.v20130402-1529.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.HttpServiceRuntimeImpl$LegacyServlet.service(HttpServiceRuntimeImpl.java:1232) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.registration.EndpointRegistration.service(EndpointRegistration.java:153) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.servlet.ResponseStateHandler.processRequest(ResponseStateHandler.java:63) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.context.DispatchTargets.doDispatch(DispatchTargets.java:98) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.HttpServiceRuntimeImpl.doDispatch(HttpServiceRuntimeImpl.java:372) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at org.eclipse.equinox.http.servlet.internal.servlet.ProxyServlet.service(ProxyServlet.java:70) [org.eclipse.equinox.http.servlet_1.2.1.v20150828-1818.jar:na]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790) [javax.servlet_3.1.0.v201410161800.jar:3.1.0]
+	at org.eclipse.equinox.http.jetty.internal.HttpServerManager$InternalHttpServiceServlet.service(HttpServerManager.java:357) [org.eclipse.equinox.http.jetty_3.1.1.v20150818-2108.jar:na]
+	at org.eclipse.jetty.servlet.ServletHolder.handle(ServletHolder.java:808) [org.eclipse.jetty.servlet_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:587) [org.eclipse.jetty.servlet_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:221) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1127) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:515) [org.eclipse.jetty.servlet_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:185) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1061) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:141) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:97) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.Server.handle(Server.java:499) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:310) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:257) [org.eclipse.jetty.server_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.io.AbstractConnection$2.run(AbstractConnection.java:540) [org.eclipse.jetty.io_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:635) [org.eclipse.jetty.util_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$3.run(QueuedThreadPool.java:555) [org.eclipse.jetty.util_9.2.13.v20150730.jar:9.2.13.v20150730]
+	at java.lang.Thread.run(Thread.java:785) [na:1.8.0]
+
+
+Similar Bugs:
+
+I found this bug, but it appears to be only partly related:
+https://bugs.eclipse.org/bugs/show_bug.cgi?id=480063
+- In the case of this bug, it appears the bug reporter's code is part of the problem (which is not the case here.)
+
+Likewise, this bug appears only to be related to parsing:
+https://bugs.eclipse.org/bugs/show_bug.cgi?id=458126
+comment1 : commentId2647249 author:jgwest Text:Created attachment 258424
+Simple project that reproduces the problem
+comment2 : commentId2647267 author:janb Text:Jonathan,
+
+I suspect the explanation is that in the more recent Eclipse releases they have upgraded to jetty-9 from jetty-8.
+
+With jetty-9, a multi-part input request is parsed by the container the first time the application calls one of the Request.getParam() methods. You can see this happening on your stacktrace for Luna-SR2 (however I don't know why it produces an exception).
+
+Your jsp should be able to call Request.getPart() methods to retrieve the pre-parsed form contents. Can you do that with your test harness and report back? I tried to follow your instructions, however I don't even have the Run > Run Configuration > New Eclipse Application > Run menu option!
+
+thanks,
+Jan
+comment3 : commentId2647754 author:jgwest Text:Hi Jan, sorry if my instructions were unclear! Under the standard Eclipse Run dialog (which when it opens has the title Run Configurations), create a new Eclipse Application entry (just double click on Eclipse Application) and then click the Run. No additional configuration is needed. This is the standard mechanism for launching/debugging an Eclipse plug-in.
+
+I think you are right about Jetty 8 to Jetty 8 (based on version numbers of Luna SR2 vs Mars). Though while getPart(...) may work, I would expect that if getPart(...) is not called, then the request body should be available to the JSP. In our case, our application would need to be heavily refactored to use getPart() rather than the previous method of parsing it ourselves and passing the data to the appropriate points.
+comment4 : commentId2654414 author:kchong Text:Hi Jan, do you have an update on this?
+comment5 : commentId2654692 author:janb Text:(In reply to Keith Chong from comment #4)
+
+> Hi Jan, do you have an update on this?
+
+Keith,
+
+No. I assume that the Eclipse has some kind of servlet that must be marked as supporting multipart, which is why jetty will parse the content when the first call to request.getParam() happens. Whether it is Eclipse code or application code that is calling getParam() I don't know. 
+
+I think this issue needs to be assigned to Eclipse to evaluate. Not sure what the correct project is, but I'll take a stab and assign it to Equinox. The Equinox guys can re-assign it to the correct place.
+
+Jan
+comment6 : commentId2660847 author:raymond.auge Text:(In reply to Jan Bartel from comment #5)
+> (In reply to Keith Chong from comment #4)
+> 
+> > Hi Jan, do you have an update on this?
+> 
+> Keith,
+> 
+> No. I assume that the Eclipse has some kind of servlet that must be marked
+> as supporting multipart, which is why jetty will parse the content when the
+> first call to request.getParam() happens. Whether it is Eclipse code or
+> application code that is calling getParam() I don't know. 
+> 
+> I think this issue needs to be assigned to Eclipse to evaluate. Not sure
+> what the correct project is, but I'll take a stab and assign it to Equinox.
+> The Equinox guys can re-assign it to the correct place.
+> 
+> Jan
+
+This is exactly the case.
+
+Can you try with either https://git.eclipse.org/r/#/c/64439/ or after https://git.eclipse.org/c/equinox/rt.equinox.bundles.git/commit/?id=d697189047e4dde27d001ae177b78a663fd9d9f0
+comment7 : commentId2665474 author:narayana.nekkanti Text:any simple workaround to fix this ?
+comment8 : commentId2665559 author:raymond.auge Text:(In reply to Lakshminarayana from comment #7)
+> any simple workaround to fix this ?
+
+Unfortunately not. The Servlet 3.0 Part API reads the stream and gives you the pieces directly through the API. You need the patch specified.
+comment9 : commentId2666661 author:tjwatson Text:Taking away from Jan, unless Jan disagrees I don't think he will be fixing this.
+
+Ray, assigning to you, but if I understand correctly, we already addressed this?  If so please dup to the defect where this is fixed.
+comment10 : commentId2668426 author:jgwest Text:Hi Raymond, speaking to comment #6, good news: I am no longer able to reproduce using either a recent Neon driver, or a recent Mars.2 driver. These two releases should include the commits mentioned in C6. So this looks good from my end, and this has also resolved the WSE bug (476132) mentioned in the description.
+comment11 : commentId3020585 author:genie Text:This bug hasn't had any activity in quite some time. Maybe the problem got resolved, was a duplicate of something else, or became less pressing for some reason - or maybe it's still relevant but just hasn't been looked at yet.
+
+If you have further information on the current state of the bug, please add it. The information can be, for example, that the problem still occurs, that you still want the feature, that more information is needed, or that the bug is (for whatever reason) no longer relevant.
+
+--
+The automated Eclipse Genie.
+comment12 : commentId3086643 author:Lars.Vogel Text:This bug was marked as stalebug a while ago. Marking as wontfix.
+
+If this report is still relevant for the current release, please
+reopen and remove the stalebug whiteboard tag.
+--------------------------------------------------------------------------------
+235941. Summary: [regression] Some features are missing from the About dialog
+ Description: 
+comment0 : commentId1261770 author:mober.at+eclipse Text:+++ This bug was initially created as a clone of Bug #222480 +++
+
+Build ID: eclipse-SDK-3.4RC3 (I20080523-0100)
+
+With a fresh installed eclipse SDK, perform Help > About > Feature Details.
+
+All the Source Features ("org.eclipse.cvs.source" for instance) are missing. I checked around my old installations, and it seems to be a regression between Eclipse-3.4m4 (which did show the source features), and Eclipse-3.4m6a (which did not show them any more).
+
+I don't quite understand under what circumstances the included features are missing. Having CDT-5.0-RC2 SDK installed into an Extension Location by means of the "Classic Update" Capability, for instance,
+  I do see "cdt.platform.source" which is included in org.eclipse.cdt.sdk; 
+  I dont see "cdt.platform" which isn't anywhere included but is required.
+
+I find that behavior not only confusing to the user because I don't really understand any more what features in what dependencies I have installed; given that also P2 Installer only shows the "Root" features  that I had selected, but not the "included/required" features, I have no good handle anymore what I have installed when the About Dialog also doesn't show me that information.
+
+What I find even more problematic, is that I have absolutely no way to look at the License of the invisible features from the UI any more (I can look at the plugin licenses by pressing the "Plug-in Details" button from the main About Dialog).
+
+Maybe the issue is somehow to existence Branding plugins, since my own Target Management / RSE features all show up and I know that I have specified branding plugins for all of them. The "org.eclipse.cdt.platform" plugin which is missing does not have a branding plugin explicitly specified, and CDT does also not come with a plugin by the same name. 
+
+For the "org.eclipse.cdt.platform.source" feature which is shown, there does exist a plugin which goes by the same name.
+
+It might also be that I'm wrong assuming this is a P2 regression; perhaps it's always been that way that features without associated breanding plugin were not shown, and in Eclipse 3.4m4 the source features did happen to have a "branding" plugin by the same name but that was changed with the new source bundle story? See also bug 163169.
+
+Could anybody assess how critical the issue of missing features in about is, from a Licensing / Legal point of view? I'm setting the issue "major" for now.
+comment1 : commentId1261988 author:mober.at+eclipse Text:One odd thing here is that
+   org.eclipse.cdt
+which is not an included feature in my case, and does not have a branding plugin listed in its plugins (in fact, that feature does not have any plugin on its own, but only included features) - *is* listed in about.
+
+So, it's sufficient to have a plugin by the same name (org.eclipse.cdt) even if included in a different feature, in order to make the feature appear in about.
+
+Which gives odd user experience in the org.eclipse.cdt case, bacause "List Plugins" for that feature returns an emtpy list. Users asks: "What kind of feature is this, which doesn't have any plugins for its own and seemingly also has no subfeatures"?
+
+With Old Classic UM , things were not that bad because there was still the "Manage Updates" dialog whichpresented a tree view of all feature inclusions, even if "About" did not show feature inclusion dependencies.
+comment2 : commentId1261999 author:pascal Text:The absence of source feature in the about dialog is not a consequence of p2, but rather a consequence of the decision to no longer install, in OSGi, the source bundles. Why this decision? Because with the new format for source bundles (one per binary bundle) the system contained twice as many bundle as it used to and consequently got a bit slower to start.
+
+The technical problem comes from the fact that update manager is looking for the primary plugin in the set of OSGi bundles and fails to find the source bundles because they are no longer installed.
+
+Two things that we still need to verify:
+- why, in case of a dropins install plug-in, a source bundle is not recognized as such (we may have taken this decision as a backward compatibility story, but I don't recall for sure)
+- why is the code we changed in UM a month ago or so, did not cover that case?
+
+comment3 : commentId1262333 author:mober.at+eclipse Text:Hm... I understand your comment about source bundles, but that doesn't explain why I cannot see the following CDT features which are *not* source features and *not* related to source bundles:
+
+   org.eclipse.cdt.platform
+   org.eclipse.cdt.gnu.build
+   org.eclipse.cdt.gnu.debug
+
+These three are automatically installed when I install the "CDT Tooling" feature (org.eclipse.cdt) -- cdt.platform is "required" the two gnu features are "included". But none of these three are shown in the About dialog, leaving only the "org.eclipse.cdt" feature which doesn't have any plugin of its own.
+
+This looks like an incomplete fix for bug 222480, or a regression. And, again, I'm quite worried about the Legal implications of no longer being able to see the Licenses for such features from the UI by any means.
+
+The Apache License, for instance, *requires* products which use an Apache Library to make the note
+
+    "This product includes software developed by the Apache Software Foundation"
+
+visible from a product's about dialog. Now assume that my feature which is including an Apache Library, and which is correctly set up, is eventually included by somebody else's feature (which I don't know about). And it gets hidden consequently. Now my Apache note is no longer visible in the About Dialog, thus no longer complying with the License.
+
+This is a theoretical scenario which I didn't test, but it's scary enough to investigate what's going wrong here. And, what's going wrong here is a regression compared to Eclipse 3.3 for sure.
+comment4 : commentId1262339 author:mober.at+eclipse Text:Adding Bjorn and Janet on CC to notify about potential legal issues with this (See my previous comment #3)
+comment5 : commentId1262538 author:dj.houghton Text:Just to be clear, there are 2 issues here: one concerning source bundles/features and the other with features with branding.
+
+As for branding, the fix for bug 222480 included changes to the metadata generator and thus changes to the metadata. Once the update site that you are using is updated with the new metadata, the branding issue should be resolved.
+
+comment6 : commentId1262550 author:mober.at+eclipse Text:(In reply to comment #5)
+> Just to be clear, there are 2 issues here: one concerning source
+> bundles/features and the other with features with branding.
+
+Ok
+
+> As for branding, the fix for bug 222480 included changes to the metadata
+> generator and thus changes to the metadata. Once the update site that you are
+> using is updated with the new metadata, the branding issue should be resolved.
+
+Hm... I've been using CDT site which doesn't have artifacts.jar / content.jar but only site.xml -- shouldn't Eclipse 3.4RC3 include the updated metadata generator which generates the stuff correctly on the fly, based on the site.xml ?
+
+
+comment7 : commentId1262565 author:dj.houghton Text:I'll look into that now....
+comment8 : commentId1262675 author:jeffmcaffer Text:For the source legal aspects I think we are fine here for now.  Source is NOT installed into the Eclipse configuration you are running so reporting it in the About is not relevant.  If the user installs a source feature via p2 then they are prompted with the same licensing workflow as all other p2 installed content.  
+
+However, looking forward, if the About information is supposed to be "About this profile" (p2 notion of profile) then it would make sense to start talking about all the different things that may have been installed using p2.  remember p2 can install WARs, natives, RPMs, ... and even source.  This sort of change is not containable in Ganymede (and perhaps not even the maintenance release) as it is quite deep and would require rework in p2, core and UI.
+comment9 : commentId1262831 author:dj.houghton Text:Martin, do you have an example where all those CDT features do appear in the About dialog? I have tried several different variants of installation (p2 and non-p2) and I see the org.eclipse.cdt feature in the list but not the others. 
+
+The 3 features that are missing from the dialog (org.eclipse.cdt.gnu.build, org.eclipse.cdt.gnu.debug, org.eclipse.cdt.platform) don't have a plug-in with the same ID and don't specify a primary plug-in in their feature manifest.
+
+It could be argued that all the features should appear in the dialog (I'd have to look closer at the doc and API), but I don't think this is a regression. 
+
+For instance, one of the things that I am doing is installing the new CDT version into a non-p2'ized Eclipse (see updated script in bug 224908) and I am seeing the same results... just the one feature in the list.
+
+Thanks.
+
+
+
+comment10 : commentId1262853 author:mober.at+eclipse Text:(In reply to comment #9)
+> Martin, do you have an example where all those CDT features do appear in the
+> About dialog?
+
+Hm... Eclipse 3.3 did show all the features for sure, but that was with CDT 4.0 while now we have 5.0 so I'm not sure if this is a fair comparison in this case.
+
+> The 3 features that are missing from the dialog (org.eclipse.cdt.gnu.build,
+> org.eclipse.cdt.gnu.debug, org.eclipse.cdt.platform) don't have a plug-in with
+> the same ID and don't specify a primary plug-in in their feature manifest.
+
+Correct.
+
+> It could be argued that all the features should appear in the dialog (I'd have
+> to look closer at the doc and API), but I don't think this is a regression. 
+
+Hm... likely not a P2 regression, but probably an About Dialog regression? I'm not 100% sure whether Eclipse 3.3 did show features without branding plugin in the about dialog or not. Probably it did not and it's all meant to be that way. Perhaps it's time to reassign this to Platform UI.
+
+> For instance, one of the things that I am doing is installing the new CDT
+> version into a non-p2'ized Eclipse (see updated script in bug 224908) and I am
+> seeing the same results... just the one feature in the list.
+
+Right. Either CDT has their features misconfigured, or it's intended to be that way by CDT (unlikely), or it's a bug in Platform UI Aboutdialog. I'll leave it for you though to reassign since you likely better know the right persons to talk to.
+
+And, this is independent of the source bundle question which has been answered separately.
+comment11 : commentId1262856 author:dj.houghton Text:My comments in comment #9 triggered a light bulb as to why the source features
+don't appear in the About dialog. I believe we lost them when we made the move
+to individual source bundles. The source features no longer have a
+corresponding bundle with the same id and they don't specify a primary plug-in
+in their manifest, so they aren't in the dialog.
+comment12 : commentId1280029 author:john.arthorne Text:
+
+*** This bug has been marked as a duplicate of bug 220839 ***
+--------------------------------------------------------------------------------
+517025. Summary: Regression: Install new Software tries contacting sites even though "contact all sites" is turned off
+ Description: 
+comment0 : commentId2835865 author:mober.at+eclipse Text:Created attachment 268487
+Screenshot of the stuck install
+
+Build ID: eclipse-SDK-4.7RC1-linux-gtk-x86_64
+
+I'm sitting behind an authenticating proxy, through which I cannot access the Internet. Trying to install and offline downloaded copy of egit into my eclipse SDK is extremely slow and shows that it tries to access the Internet, although I have turned off the "Contact all update sites ..." checkbox in the Install New Software dialog.
+
+Steps to reproduce:
+1. Download and launch eclipse-SDK-4.7RC1
+2. Download latest nightly org.eclipse.egit.repo*.zip.
+3. Help > Install new Software : Archive : Point to the offline egit.repo*.zip
+4. Press Next (forgot to disable the "Contact all update sites")
+5. Press Cancel in progress which won't end
+6. Press Back, disable the "Contact all update sites"
+7. Press Next, choice is now very fast; select EGit and Source for EGit, Next
+8. Wait very long, create thread dump (attached).
+
+Eventually, after a VERY long time in the range of 4 minutes, the install completes. Still, this is unexpected and I think that this workflow was fine before without accessing the Internet.
+comment1 : commentId2835869 author:mober.at+eclipse Text:Created attachment 268488
+thread dump
+comment2 : commentId2835870 author:mober.at+eclipse Text:I thought that this were fixed through
+https://bugs.eclipse.org/bugs/show_bug.cgi?id=235923
+
+Although I just noticed that this one is still open but that's maybe an oversight:
+https://bugs.eclipse.org/bugs/show_bug.cgi?id=408208
+comment3 : commentId3085147 author:genie Text:This bug hasn't had any activity in quite some time. Maybe the problem got resolved, was a duplicate of something else, or became less pressing for some reason - or maybe it's still relevant but just hasn't been looked at yet.
+
+If you have further information on the current state of the bug, please add it. The information can be, for example, that the problem still occurs, that you still want the feature, that more information is needed, or that the bug is (for whatever reason) no longer relevant.
+
+--
+The automated Eclipse Genie.
+--------------------------------------------------------------------------------
+365908. Summary: Regression: I20111206-1015 doesn't pick up any extensions when emf-2.7.1 is installed
+ Description: 
+comment0 : commentId2037160 author:mober.at+eclipse Text:Created attachment 208052
+config area, logs and batchfile
+
+Build ID: I20111206-1015 (4.2m4 candidate)
+
+In order to integration test my project against the Release Train, I'm typically downloading a fresh Eclipse SDK, then copy *.link files into a space/dropins/ folder for picking up all the extensions I need, then launch with -configuration space/configuration.
+
+This fails with I20111206-1015 in a strange way:
+
+- Looking at About : Installed software, my extensions are all visible
+- But looking at About : Plugins, all plugins are missing
+    - Same for About : Features, and About : Configuration (extensions missing)
+- But in the bundles.info file, all my extensions are listed (attached)
+
+This is blocking my testing, since I can't easily get all my dependent extensions into Eclipse without major reinstall.
+
+I checked back and noticed that 
+- In 4.2m2, exactly the same setup did work as expected
+- In 4.2m3, only RSE was picked up but CDT-8.0.1 was not (I didn't notice that)
+- In I20111206-1015 RSE also isn't picked up any more. 
+- Installing RSE from its Repo into I20111206-1015 works so it's not a
+  bundle dependency problem.
+
+I'm attaching a ZIP that has the batchfile I'm using to launch, as well as the config.log from "About:Configuration" and my entire configuration area (including bundles.info) and dropins and *.link files.
+comment1 : commentId2037194 author:mober.at+eclipse Text:Created attachment 208055
+Logs
+
+I tried installing my various extensions manually via the UI, and it looks like installing EMF-2.7.1 breaks things.
+
+Steps to reproduce:
+1. Launch I20111206-1015
+2. Install something from the Indigo Repo, eg TM/RSE or CDT, Restart
+   --> The extension is visible (RSE or CDT Perspective
+3. Install EMF-2.7.1 from Indigo
+   --> Note that EMF common is "not installed because a newer version is
+       already installed"
+4. Restart
+   --> TM, RSE plugins gone.
+
+There's also a couple odd error messages in the log (log attached; note that some of the older log entries may be from previous runs in that workspace with older versions of Eclipse, but the recent ones are all from I20111206-1015).
+comment2 : commentId2037196 author:mober.at+eclipse Text:Confirmed that reverting the emf-2.7.1 install via About:Configuration brings back the CDT, RSE, eGit etc UI contributions.
+
+An incompatibility like that shouldn't happen with proper dependencies ?!?
+
+This log entry remains:
+
+Exception while dispatching event org.osgi.service.event.Event [topic=org/eclipse/e4/ui/model/application/ApplicationElement/tags/ADD] to handler org.eclipse.e4.ui.services.internal.events.UIEventHandler@16437f7
+java.lang.NullPointerException
+	at org.eclipse.e4.ui.workbench.addons.minmax.MinMaxAddon.getBarForElement(MinMaxAddon.java:742)
+comment3 : commentId2037221 author:mober.at+eclipse Text:Not a blocker for me any more since getting rid of the emf-2.7.1 extension got my original configuration back. Updating Summary to reflect recent findings.
+
+I'm still concerned that 4.2m4 candidate seems to be incompatible with emf-2.7.1 since there may be products / extensions which depend on emf, pull in emf from indigo, and thus run into this problem.
+comment4 : commentId2037288 author:dj.houghton Text:I followed the steps in comment 1 and it worked fine for me on my Mac. I will try the same on Win7.
+comment5 : commentId2037321 author:dj.houghton Text:I've done the steps and installed from the UI from comment 1 on both mac and win7 without problems. I also tried following the same steps and using link files to "install" both RSE and EMF and it also worked ok.
+comment6 : commentId2037480 author:mober.at+eclipse Text:Hm... strange. I reproduced the issue 3 times on a blank empty config area. Host was Win7-64bit with a 32bit Oracle jre6u25. For now I'm reducing severity since this seems to be more of a special case.
+
+One thing I did "specially" when I installed from the UI, was install from my local extension locations rather than the online repos. I didn't want to redownload everything but use what I had.
+
+Maybe reproducing the issue takes more extensions than just TM / CDT + emf2.7.1 ... I'll try again later this week.
+
+Is there any comment on the logs I saw (NPE)? Any additional tracing I could add? Anything else to track this down?
+comment7 : commentId2037984 author:pwebster Text:Eric, can you comment on comment #2?
+
+PW
+comment8 : commentId2041938 author:dj.houghton Text:Eric is gone for the holidays so we will have to wait until the new year before we hear from him.
+
+If you turn on some of the tracing options you can see more info about the reconciler, the profile change request it is building, the plan that is generates, and the operations it performs. Things installed through the links folder is like using the drop-ins and thus everything is considered optional so if something doesn't get installed, we don't always say why.
+
+org.eclipse.equinox.p2.core/debug=true
+org.eclipse.equinox.p2.core/reconciler=true
+
+There are more debug options listed in the .options file in the org.eclipse.equinox.p2.core project which might be helpful too. 
+
+I usually also run with -console and then do an "ss" once I've started up. If you see any bundles in the "INSTALLED" state it means there is a problem and they can't be RESOLVED. Try typing "start xxx" where xxx is the bundle id number, and you should get a message printed out why the bundle couldn't be resolved.
+comment9 : commentId2897560 author:mistria Text:Let's mark this extremely old bug as out-of-date and INVALID.
+--------------------------------------------------------------------------------
+324753. Summary: [perfs] Regression on several OSGI component tests
+ Description: 
+comment0 : commentId1811075 author:frederic_fusier Text:Verifying N20100904-2000 build, it appears that most of the OSGI perf tests got a big regression, except StatePerformanceTest#testCreation().
+
+This first time the regression appeared was on build N20100828-2000 but it seems that for some tests, it was on later build. I do not open different bugs but if there are several origin please feel free to split this bug into several ones (including me in cc thx).
+comment1 : commentId1811267 author:tjwatson Text:One possible cause of the regression is the change to org.eclipse.osgi.internal.module.MappedList<K, V> to use Array.newInstance to create properly typed arrays.  I will have to test to see if that is the case.  If so then we should consider changing the internal class to use generified List instead of typed arrays.
+comment2 : commentId1823104 author:daniel_megert Text:Another cause might be bug 323012.
+comment3 : commentId1823122 author:tjwatson Text:Perhaps, I was going to wait to do more analysis until after we start compiling with the new compiler.
+
+In this case (resolver slowdown) I have my doubts.  Quite a bit if changes went into the resolver to implement generic capability/requirement (RFC 154).  I would not be surprised if this slowed us down some.  Although the current numbers are more than I would expect.
+comment4 : commentId1830116 author:tjwatson Text:Created attachment 181204
+degredation comment test patch
+
+This slowdown is not related to bug323012.
+
+I have tracked down the slowdown for all the resolution tests (all test except testStoreAndRetrieve) to the changes required for bug323296.  At first I thought it was because of the changes mentioned in comment 1 about the use of Array.newInstance.  While that can be slow, I modified MappedList a while back in bug324774 to use types of List<V> instead of arrays V[] which removed the calls to Array.newInstance.  This has not helped speed things up.
+
+The tests do a large amount of resolution loops.  before bug323296 we could easily iterate over a simple array type for all the suppliers.  But the introduction of resolver hooks in bug323012 has forced us to create Collections of capabilities to pass the resolver hooks.  We must pre-filter these collections to remove any capabilities that do not match the constraint.  This adds an extra loop where we iterate over and manipulate the Collection to remove non-matching candidates before passing the collection to any registered hooks.  This extra step to create an iterator and additional looping contributes to the overall regression for the resolver.  Since we must use Collections to pass the ResolverHook it is much better to use the Collection construct in the code, to do otherwise likely will only add even more overhead.
+
+I am going to mark up the resolution tests with a degradation statement in 3.7 and point to this bug.
+
+The testStoreAndRetrieve degradation is because of bug323427.  There is extra data for each generic capability which requires more time to read and write the data.  I will add a degradation comment to that test also.
+comment5 : commentId1830118 author:tjwatson Text:Patch released.
+--------------------------------------------------------------------------------
+404688. Summary: [Regression] JNI Launch fails with eclipse 4.3M6 on mac osx snow leopard with openJDK7
+ Description: 
+comment0 : commentId2238413 author:mober.at+eclipse Text:+++ This bug was initially created as a clone of Bug #404266 +++
+
+Launching eclipse 4.3M6 downloaded from http://www.eclipse.org/downloads/index-developer.php crashes with the following error message:
+
+Failed to load the JNI shared library "/Library/Java/JavaVirtualMachines/1.7.0u.jdk/Contents/Home/bin/../jre/lib/client/libjvm.dylib"
+
+eclipse:
+eclipse classic 4.3M6 OSX-64Bit
+OS: 
+mac osx 10.6.8
+Java: 
+openjdk version "1.7.0-jdk7u6-b20"
+OpenJDK Runtime Environment (build 1.7.0-jdk7u6-b20-20120725)
+OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)
+
+We have tracked down the problem to the Equinox JNI Launcher, since this command works OK when invoked on commandline:
+
+  java -XstartOnFirstThread -jar
+plugins/org.eclipse.equinox.launcher_1.3.0.v20130225-1645.jar
+
+The Launhcer was good on the same machine / same JDK with 4.3m5 so it looks like some regression has been introduced - maybe related to CBI build.
+comment1 : commentId2238684 author:Silenio_Quarti Text:It looks like bug#403386.  Please try upgrading your JDK.
+comment2 : commentId2238933 author:mober.at+eclipse Text:Newer JDK's all require OSX 10.7.3 or later, but submitter is stuck on OSX 10.6 with an older OpenJDK 7 build that's not available any more:
+
+https://bugs.eclipse.org/bugs/show_bug.cgi?id=404266#c13
+
+The odd thing is that it looks like 4.3m5 worked OK and the JNI launcher started failing in 4.3m6 only. I think this is in fact a dup of bug 403386 , not sure if it makes sense to investigate what caused the regression between m5 and m6.
+comment3 : commentId3077763 author:genie Text:This bug hasn't had any activity in quite some time. Maybe the problem got resolved, was a duplicate of something else, or became less pressing for some reason - or maybe it's still relevant but just hasn't been looked at yet.
+
+If you have further information on the current state of the bug, please add it. The information can be, for example, that the problem still occurs, that you still want the feature, that more information is needed, or that the bug is (for whatever reason) no longer relevant.
+
+--
+The automated Eclipse Genie.
+comment4 : commentId3077781 author:tjwatson Text:No plans to investigate old Java 7 issues.
+--------------------------------------------------------------------------------

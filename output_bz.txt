@@ -1,0 +1,113 @@
+232413. Summary: [ui] Long delay opening updates dialog--------------------------------------------------------------------------------
+389630. Summary: Deadlock in EclipsePreferences--------------------------------------------------------------------------------
+185936. Summary: Crash in native code when running launcher.jar -showsplash on Solaris 9--------------------------------------------------------------------------------
+224269. Summary: Startup takes 20 times longer with P2 enabled--------------------------------------------------------------------------------
+427148. Summary: Unable to update from one version to the next, on Windows only - can not remove eclipse.exe--------------------------------------------------------------------------------
+300417. Summary: [reconciler] poor performance resolving some 'dropped in' bundles makes eclipse unusable--------------------------------------------------------------------------------
+239449. Summary: [ui] Unstable behaviour of p2 while refreshing update sites--------------------------------------------------------------------------------
+283297. Summary: Installation path containing square brackets prevents eclipse startup--------------------------------------------------------------------------------
+437234. Summary: Eclipse in shared mode under windwos does not start when .eclipse dir is created on a network file system.--------------------------------------------------------------------------------
+319514. Summary: [launcher] VM argument in eclipse.ini not take in account with java 1.6u21--------------------------------------------------------------------------------
+339106. Summary: recursive error produces too many files open--------------------------------------------------------------------------------
+284520. Summary: Class org.osgi.framework.Bundle.loadClass(String name) throws ClassNotFoundException for Array Types--------------------------------------------------------------------------------
+359698. Summary: [prefs] Regression: EclipsePreferences#flush is subject to deadlock due to Open Call via ProjectPreferences / ProfilePreferences--------------------------------------------------------------------------------
+149994. Summary: [launcher] part of eclipse.ini  (vmargs) are ignored if -vmargs is used on the command line too--------------------------------------------------------------------------------
+359851. Summary: [prefs] Regression: EclipsePreferences#flush is subject to deadlock due to Open Call via ProjectPreferences / ProfilePreferences--------------------------------------------------------------------------------
+417458. Summary: Remote bundle discovery is broken on JDK 7u40--------------------------------------------------------------------------------
+443237. Summary: Error loading application a second time since Eclipse Luna SR1--------------------------------------------------------------------------------
+376141. Summary: [prefs] Regression: EclipsePreferences#flush is subject to deadlock due to Open Call via ProjectPreferences / ProfilePreferences--------------------------------------------------------------------------------
+534759. Summary: [GTK3] Running Eclipse with -nosplash causes input problems--------------------------------------------------------------------------------
+327172. Summary: NPE in 'Contacting Software Sites'--------------------------------------------------------------------------------
+217037. Summary: [aspects] Supplementing does not work properly--------------------------------------------------------------------------------
+507092. Summary: Eclipse fails to start: "An internal error occurred during: "Initializing workspace."--------------------------------------------------------------------------------
+381598. Summary: [repository] Improve the efficiency of p2 over http--------------------------------------------------------------------------------
+203325. Summary: Wrong eclipse.ini configuration for PermGen size--------------------------------------------------------------------------------
+279542. Summary: [eclipse] link action no longer supports @artifact--------------------------------------------------------------------------------
+222563. Summary: [ui] Opening up the software update dialog unbearably slow--------------------------------------------------------------------------------
+351231. Summary: [prefs] EclipsePreferences#flush method should be synchronized--------------------------------------------------------------------------------
+281472. Summary: [Net] You can't update Eclipse 3.5 behind the proxy--------------------------------------------------------------------------------
+222639. Summary: [ui] - implementation of "drag bundle into eclipse"--------------------------------------------------------------------------------
+483521. Summary: JSP that is the target of a multipart/form-data POST is not able to read the request body containing the multipart data, regression from Luna SR2--------------------------------------------------------------------------------
+320029. Summary: ClassCastException inside debug code prevents tests from being run in debug mode--------------------------------------------------------------------------------
+241289. Summary: Fixes for artifact repository access (trailing slashes and synchronization)--------------------------------------------------------------------------------
+224145. Summary: Software Update must allow to install plug-ins into extension location--------------------------------------------------------------------------------
+167310. Summary: [launcher] Console not working on Win32--------------------------------------------------------------------------------
+297742. Summary: [transport] Investigate how to maintain HTTP session--------------------------------------------------------------------------------
+300596. Summary: [ds] Deadlock in startup of org.eclipse.equinox.util--------------------------------------------------------------------------------
+311393. Summary: [engine] ProvisioningContext always perform reference following for artifact repositories--------------------------------------------------------------------------------
+268198. Summary: [ui] InstallNewSoftwareHandler causes repositories to be retained indefinitely--------------------------------------------------------------------------------
+198462. Summary: ClassCastException: WebStartMain$BundleInfo--------------------------------------------------------------------------------
+258207. Summary: [ui] Revert dialog let's you click Finish twice--------------------------------------------------------------------------------
+199135. Summary: jdt.ui bundle activator assumes PlatformUI.getWorkbench(), causing autobuild failure when running headless--------------------------------------------------------------------------------
+235941. Summary: [regression] Some features are missing from the About dialog--------------------------------------------------------------------------------
+427123. Summary: [publisher] Stale profile files in org.eclipse.equinox.p2.publisher--------------------------------------------------------------------------------
+347531. Summary: Cannot click Next when attempting to update, if one of the components is deselected--------------------------------------------------------------------------------
+277824. Summary: [p2][pdebuild] root files don't end up being included in the product--------------------------------------------------------------------------------
+236157. Summary: Failed download of flat bundles or features is not retried--------------------------------------------------------------------------------
+544220. Summary: Huge performance impact due to product EE as required capability (introduced in bug 531345)--------------------------------------------------------------------------------
+407940. Summary: [transport] Initial connection happens in current thread--------------------------------------------------------------------------------
+314849. Summary: [launcher][gtk] Usability: Confusing errors on startup or SEGFAULT when DISPLAY is not set correctly--------------------------------------------------------------------------------
+236437. Summary: Lost artifact repositories--------------------------------------------------------------------------------
+449779. Summary: Deadlock within the OSGi framework--------------------------------------------------------------------------------
+291513. Summary: Eclipse uses too much memory for "dead" bundles--------------------------------------------------------------------------------
+550689. Summary: IllegalArgumentException in PlatformLogWriter.convertRawEntryToStatus--------------------------------------------------------------------------------
+408636. Summary: Non-reflexive "StateImpl" serialization leads to loss of platform property configuration--------------------------------------------------------------------------------
+185734. Summary: [Launcher] eclipse launcher exe is missing for Solaris-Motif--------------------------------------------------------------------------------
+435796. Summary: IndexOutOfBoundsException in ResolverImpl--------------------------------------------------------------------------------
+280929. Summary: Deadlock possible between refreshPackages and BundleLoader initialization--------------------------------------------------------------------------------
+300286. Summary: Automatic Updates don't appear to work for me--------------------------------------------------------------------------------
+551430. Summary: Improve ManifestElement#readline performance--------------------------------------------------------------------------------
+337334. Summary: Provide p2 repository containing all launcher fragments--------------------------------------------------------------------------------
+255119. Summary: [fwkAdmin] "eclipse.p2.data.area" property incorrectly persisted to "config.ini"--------------------------------------------------------------------------------
+436758. Summary: Installing a bundle that requires Java 7 when running 6 with -clean cannot recover--------------------------------------------------------------------------------
+352395. Summary: [transport] Transport not initialized properly--------------------------------------------------------------------------------
+517025. Summary: Regression: Install new Software tries contacting sites even though "contact all sites" is turned off--------------------------------------------------------------------------------
+409709. Summary: [native] P2 tries to open a port, triggers windows firewall--------------------------------------------------------------------------------
+309624. Summary: [publisher] PDE Updatesite Build all generates wrong categories--------------------------------------------------------------------------------
+283475. Summary: [launcher] Eclipse cannot be launched on Solaris 9 because of libc.so library version dependency--------------------------------------------------------------------------------
+257145. Summary: [fwkadmin] Cannot launch target with path containing whitepsace--------------------------------------------------------------------------------
+300445. Summary: [ui] Can't update from I20100119-0800--------------------------------------------------------------------------------
+235165. Summary: [ui] Refreshing repo list removes Ganymede--------------------------------------------------------------------------------
+339164. Summary: File level locking doesn't 'lock' the file between multiple threads in the same VM (Java 1.5)--------------------------------------------------------------------------------
+260319. Summary: Lighterweight Provisioning Plan?--------------------------------------------------------------------------------
+339862. Summary: Ugly printout during creation of artifact repositories.--------------------------------------------------------------------------------
+493583. Summary: [http] HttpServletResponseWrapperImpl.InternalOutputStream does not forward flush() to originalOutputStream--------------------------------------------------------------------------------
+260935. Summary: [cm] the data types for configuration properties uses Collection--------------------------------------------------------------------------------
+528957. Summary: Contributions to same extension point seem to be randomly ordered in 4.7--------------------------------------------------------------------------------
+197173. Summary: console fails if passed a set of initial commands--------------------------------------------------------------------------------
+249266. Summary: InvalidRegistryObjectException after installing releng tools.--------------------------------------------------------------------------------
+210384. Summary: console is blocking in 3.3.1--------------------------------------------------------------------------------
+467447. Summary: Set more specific user agent--------------------------------------------------------------------------------
+365908. Summary: Regression: I20111206-1015 doesn't pick up any extensions when emf-2.7.1 is installed--------------------------------------------------------------------------------
+231998. Summary: [ui] when filter text is disabled, keystroke is interpreted as button mnemonic--------------------------------------------------------------------------------
+198405. Summary: NPE if EventManager is created with null thread name--------------------------------------------------------------------------------
+324753. Summary: [perfs] Regression on several OSGI component tests--------------------------------------------------------------------------------
+276996. Summary: [ui] Install new software allowed me to start an install while another was in progress--------------------------------------------------------------------------------
+497510. Summary: [http] HttpServletRequestWrapperImpl::getRequestUri() returning decoded URI--------------------------------------------------------------------------------
+373213. Summary: adopt to ECF 3.5.5--------------------------------------------------------------------------------
+235923. Summary: Resolving dependencies is very slow even if everything is available locally--------------------------------------------------------------------------------
+421439. Summary: remove unsupported platforms from delta pack and copy s390(x) to 'bin'--------------------------------------------------------------------------------
+258259. Summary: [perfs] State Resolution test is slower than 3.4--------------------------------------------------------------------------------
+300914. Summary: [ui] filtering the "installed new software" list appears to stop due to wait on load job--------------------------------------------------------------------------------
+311579. Summary: [DS] Factory component configurations are not disposed when cannot be activated--------------------------------------------------------------------------------
+277751. Summary: [repository][mirrors] Set Country Code for mirroring purpose via property--------------------------------------------------------------------------------
+232805. Summary: [ui] Externalized license text not showing up--------------------------------------------------------------------------------
+40973. Summary: cannot install anything after uninstalling a bundle--------------------------------------------------------------------------------
+404688. Summary: [Regression] JNI Launch fails with eclipse 4.3M6 on mac osx snow leopard with openJDK7--------------------------------------------------------------------------------
+302114. Summary: Exceptions in log when starting with N20100207-2000--------------------------------------------------------------------------------
+232871. Summary: [ui] long wait opening manage sites dialog--------------------------------------------------------------------------------
+535528. Summary: java.lang.NoClassDefFoundError: javax/annotation/PreDestroy error once JDK was updated from Java8Update144 to Java10.0.1--------------------------------------------------------------------------------
+225783. Summary: p2 feature should require ECF instead of including it--------------------------------------------------------------------------------
+263600. Summary: [repo] make progress reporting smoother - "contacting sites" shows no progress on first use--------------------------------------------------------------------------------
+46145. Summary: NPE resolving state after removing bundle--------------------------------------------------------------------------------
+407430. Summary: [unity] lazy starting no longer waits if another thread triggers a start--------------------------------------------------------------------------------
+312930. Summary: InstallWizardTest#testInstallWizardUnresolved is failing--------------------------------------------------------------------------------
+274907. Summary: [planner] Planner appears to hang while computing explanation--------------------------------------------------------------------------------
+445122. Summary: ClassCastException received when System.getProperties().store() runs on 4.4.1--------------------------------------------------------------------------------
+217754. Summary: [prov] Revert loses roots--------------------------------------------------------------------------------
+387898. Summary: Wrong preference node created when starting org.eclipse.jdt.debug.ui plugin--------------------------------------------------------------------------------
+272428. Summary: [aspects] Hangs after Scala plugin update; after force quit and manual restart, it crashes; after second manual restart, it finally runs.--------------------------------------------------------------------------------
+118560. Summary: [common] API to efficiently get adapter on an object, including declarative ones--------------------------------------------------------------------------------
+234509. Summary: Create Equinox keystore fragment for Linux using gnome keyring--------------------------------------------------------------------------------
+273195. Summary: [director] Improve management of repositories--------------------------------------------------------------------------------
+514885. Summary: Pooling Version and VersionRange can improve memory and performance--------------------------------------------------------------------------------
